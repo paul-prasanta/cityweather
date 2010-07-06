@@ -49,7 +49,7 @@ public class ButtonHandler extends Activity implements WeatherCallback, OnClickL
 	String TAG = getClass().getName();
 	WeatherRecord record;
 	
-	final int MENU_DELETE = 0xA1;
+	final int MENU_CITIES = 0xA1;
 	final int MENU_EXIT = 0xA2;
 	final int MENU_ABOUT = 0xA3;
 	String city;
@@ -80,7 +80,7 @@ public class ButtonHandler extends Activity implements WeatherCallback, OnClickL
 	
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
-		menu.add(0, MENU_DELETE, 0, "Delete");
+		menu.add(0, MENU_CITIES, 0, "Selected Cities");
 		menu.add(0, MENU_ABOUT, 0, "About");
 		menu.add(0, MENU_EXIT, 0, "Exit");
 		return true;
@@ -89,13 +89,13 @@ public class ButtonHandler extends Activity implements WeatherCallback, OnClickL
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()){
-		case MENU_DELETE:
+		case MENU_CITIES:
 			if(WeatherRecord.airportCodes.size() == 0){
-				Toast.makeText(this.getApplicationContext(), "Nothing to delete", Toast.LENGTH_LONG).show();
+				Toast.makeText(this.getApplicationContext(), "You haven't yet selected any cities", Toast.LENGTH_LONG).show();
 				return false;
 			}
-			Intent intent = new Intent(this, CityListActivity.class);
-			intent.putExtra("type", "delete");
+			Intent intent = new Intent(this, SelectedCityListActivity.class);
+			intent.putExtra("type", "selected_city_list");
 			startActivity(intent);
 		break;
 		case MENU_ABOUT:

@@ -22,16 +22,13 @@ import java.util.ArrayList;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
 import com.pras.R;
-import com.pras.weather.Weather;
 import com.pras.weather.WeatherRecord;
 import com.pras.weather.WeatherRecord.WeatherCallback;
 
@@ -70,10 +67,6 @@ public class CityListActivity extends ListActivity implements  WeatherCallback {
 			cityAdapter = new CityAdapter(this.getApplicationContext(), names);
 			setListAdapter(cityAdapter);
 		}
-		else if(type.equals("delete")){
-			deleteAdapter = new CityDeleteAdapter(this.getApplicationContext());
-			setListAdapter(deleteAdapter);
-		}
 		else if(type.equals("no_match") || type.equals("no_multi")){
 			String msg = intent.getStringExtra("msg");
 			Toast.makeText(this.getApplicationContext(), msg, Toast.LENGTH_SHORT).show();
@@ -84,22 +77,6 @@ public class CityListActivity extends ListActivity implements  WeatherCallback {
 		}
 	}
 
-	private void deleteCityFromPersistentStore(String code) {
-		/*
-		 * WeatherRecord.airportCodes structure should be updated in Synchronized manner
-		 */
-		synchronized (WeatherRecord.airportCodes) {
-			SharedPreferences spref = PreferenceManager.getDefaultSharedPreferences(this);
-			SharedPreferences.Editor editor = spref.edit();
-			// store the latest city count
-			editor.putString(WeatherRecord.CITY_COUNT_LABEL,
-					""+WeatherRecord.airportCodes.size());
-			editor.remove(code);
-			// Commit changes
-			editor.commit();
-		}
-
-	}
 	/* (non-Javadoc)
 	 * @see android.app.ListActivity#onListItemClick(android.widget.ListView, android.view.View, int, long)
 	 */
@@ -117,25 +94,6 @@ public class CityListActivity extends ListActivity implements  WeatherCallback {
 			// Add the city
 			WeatherRecord record = new WeatherRecord(this);
 			record.addCity(links.get(position));
-		}
-		else if(type.equals("delete")){
-			//String airportCode = (String)WeatherRecord.weatherDetails.keySet().toArray()[position];
-			String airportCode = WeatherRecord.airportCodes.get(position);
-			Weather w = WeatherRecord.weatherDetails.get(airportCode);
-			String toastMsg = airportCode+ " is deleted";
-			if(w != null)
-				toastMsg = w.getCity()+" ("+ w.getCountry()+ ") is deleted";
-			Toast.makeText(this.getApplicationContext(), toastMsg, Toast.LENGTH_SHORT).show();
-			Log.v(TAG, "deleting "+ airportCode);
-			// reset index
-			WeatherRecord.city_index = 0;
-			// remove entries
-			WeatherRecord.weatherDetails.remove(airportCode);
-			WeatherRecord.airportCodes.remove(airportCode);
-			// update persistent store
-			deleteCityFromPersistentStore(airportCode);
-			// refresh the list
-			deleteAdapter.notifyDataSetChanged();
 		}
 	}
 

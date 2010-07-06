@@ -73,6 +73,7 @@ public class WeatherRecord implements Callback {
 	public static final int WEATHER_UPDATE = 0xA1;
 	public static final int FIND_CITY = 0xA2;
 	public static final int ADD_CITY = 0xA3;
+	public static final int WEEKLY_FORECAST = 0xA4;
 	public static final int NO_CONNECTION_FOUND = 0xE1;
 	
 	public WeatherRecord(){}
@@ -147,6 +148,24 @@ public class WeatherRecord implements Callback {
 		msg.obj = url;
 		handler.sendMessage(msg);
 	}
+	
+	/**
+	 * Retrieves the weekly forecast for a selected city
+	 * 
+	 * @param city- selected city for which weekly forecast is required
+	 */
+	public synchronized void getWeeklyForecast(String city){
+		// Create a new Handler
+		HandlerThread handlerThread = new HandlerThread("Weekly_Forecast");
+		handlerThread.start();
+		Handler handler = new Handler(handlerThread.getLooper(), this);
+		
+		Message msg = handler.obtainMessage();
+		msg.what = WEEKLY_FORECAST;
+		msg.obj = "http://api.wunderground.com/auto/wui/geo/ForecastXML/index.xml?query=".concat(city);
+		handler.sendMessage(msg);
+	}
+	
 	/**
 	 * This will send weather data stored in weatherDetails repeatedly
 	 * @return
@@ -341,6 +360,41 @@ public class WeatherRecord implements Callback {
 					listener.update(ADD_CITY, null);
 					updateWeather();
 				}
+			}catch(IOException iox){
+				 listener.update(NO_CONNECTION_FOUND, "Check your data connection/Wifi");
+			}
+			catch(Exception ex){
+				Log.i(TAG, "Error: "+ ex.toString());
+				ex.printStackTrace();
+			}finally{
+				msg.getTarget().getLooper().quit();
+				listener = null;
+			}
+		break;
+		case WEEKLY_FORECAST:
+			url = (String)msg.obj;
+			try{
+				HttpXML http = new HttpXML();
+				Log.i(TAG, "Connecting to: "+ url);
+				http.connect(url);
+				String data = http.getXML();
+				
+				// Check for invalid Response 
+				if(data == null || data.trim().length() == 0){
+					msg.getTarget().getLooper().quit();
+					listener.update(WEEKLY_FORECAST, "No Weekly Forecast record");
+					return false;
+				}
+				
+				// Parse XML response
+				DataParser parser = new DataParser();
+				System.out.println("Parsing data....");
+				parser.parse(data.getBytes());
+				
+				// TODO: Adjust DataParser.java, to fill the weekly structure
+				// Update weekly forecast
+				listener.update(WEEKLY_FORECAST, parser.weekly);
+				
 			}catch(IOException iox){
 				 listener.update(NO_CONNECTION_FOUND, "Check your data connection/Wifi");
 			}

@@ -31,7 +31,9 @@
 				<action android:name="com.pras.task.RemoteViewTask.ACTION_WIDGET_SETTINGS_BTN"/>
 			</intent-filter>
 		</activity>
+		<activity android:name=".preference.WeeklyForecastActivity"/>
 		<activity android:name=".preference.CityListActivity"/>
+		<activity android:name=".preference.SelectedCityListActivity"/>
 		<activity android:name=".preference.AboutActivity"/>
     </application>
     <uses-sdk android:minSdkVersion="3" />
