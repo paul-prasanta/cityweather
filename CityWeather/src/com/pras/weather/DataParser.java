@@ -36,6 +36,8 @@ public class DataParser extends DefaultHandler {
 
 	final String TAG = getClass().getName();
 	String node = null;
+	public ArrayList<Forecast> weekly;
+	private Forecast forecast;
 	public Weather w = null;
 	private City city;
 	public ArrayList<City> cities;
@@ -55,6 +57,17 @@ public class DataParser extends DefaultHandler {
 	final String LOCATION = "location";
 	final String LOCATION_START = "locations";
 	final String WUI_ERROR = "wui_error";
+	final String SIMPLE_FORECAST = "simpleforecast";
+	final String FORECASTDAY = "forecastday";
+	final String WEEKDAY = "weekday";
+	final String PRETTY_DATE = "pretty";
+	final String CONDITIONS = "conditions";
+	final String FAHRENHEIT = "fahrenheit";
+	final String CELSIUS = "celsius";
+	final String HIGH = "high";
+	final String LOW = "low";
+	
+	boolean isHighTemp = true;
 	
 	public void parse(byte[] data){
 		
@@ -113,6 +126,53 @@ public class DataParser extends DefaultHandler {
 			if(city != null)
 				city.link = new String(ch).substring(start, start+length);
 		}
+		else if(node.equals(PRETTY_DATE)){
+			forecast.setDate(new String(ch).substring(start, start+length));
+		}
+		else if(node.equals(WEEKDAY)){
+			forecast.setDay(new String(ch).substring(start, start+length));
+		}
+		else if(node.equals(CONDITIONS)){
+			forecast.setCondition(new String(ch).substring(start, start+length));
+		}
+		else if(node.equals(FAHRENHEIT)){
+			String v = new String(ch).substring(start, start+length);
+			if(isHighTemp){
+				String t = forecast.getHighTemp();
+				if(t == null)
+					t = v + "(F)";
+				else
+					t += "/"+ v + "(F)"; 
+				forecast.setHighTemp(t);	
+			}
+			else{
+				String t = forecast.getLowTemp();
+				if(t == null)
+					t = v + "(F)";
+				else
+					t += "/"+ v + "(F)"; 
+				forecast.setLowTemp(t);	
+			}
+		}
+		else if(node.equals(CELSIUS)){
+			String v = new String(ch).substring(start, start+length);
+			if(isHighTemp){
+				String t = forecast.getHighTemp();
+				if(t == null)
+					t = v + "(C)";
+				else
+					t += "/"+ v + "(C)"; 
+				forecast.setHighTemp(t);	
+			}
+			else{
+				String t = forecast.getLowTemp();
+				if(t == null)
+					t = v + "(C)";
+				else
+					t += "/"+ v + "(C)"; 
+				forecast.setLowTemp(t);	
+			}
+		}
 		else if(node.equals(WUI_ERROR)){
 			wuiError = WUI_ERROR;
 		}
@@ -141,6 +201,21 @@ public class DataParser extends DefaultHandler {
 		else if(node.equals(LOCATION)){
 			city = new City();
 		}
+		else if(node.equals(SIMPLE_FORECAST)){
+			/*
+			 * Initialize the weekly forecast details 
+			 */
+			weekly = new ArrayList<Forecast>();
+		}
+		else if(node.equals(FORECASTDAY)){
+			forecast = new Forecast();
+		}
+		else if(node.equals(HIGH)){
+			isHighTemp = true;
+		}
+		else if(node.equals(LOW)){
+			isHighTemp = false;
+		}
 	}
 	
 	@Override
@@ -167,6 +242,11 @@ public class DataParser extends DefaultHandler {
 			if(cities != null)
 				cities.add(city);
 			city = null;
+		}
+		else if(node.equals(FORECASTDAY)){
+			if(weekly != null)
+				weekly.add(forecast);
+			forecast = null;
 		}
 		node = null;
 	}

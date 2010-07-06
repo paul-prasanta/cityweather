@@ -47,8 +47,8 @@ public class HttpXML {
 	
 	public void connect(String url) throws IOException {
 		// Set Proxy
-		//System.setProperty("http.proxyHost", "168.219.61.250");
-		//System.setProperty("http.proxyPort", "8080");
+		System.setProperty("http.proxyHost", "168.219.61.250");
+		System.setProperty("http.proxyPort", "8080");
 		
 		Log.i(TAG, "Connecting to.."+ url);
 		http_ = (HttpURLConnection)new URL(url).openConnection();
